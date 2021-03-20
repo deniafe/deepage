@@ -14,7 +14,6 @@
 </template>
 
 <script>
-import { db } from '@/plugins/firebase'
 import VRuntimeTemplate from 'v-runtime-template'
 export default {
   name: 'Home',
@@ -23,13 +22,25 @@ export default {
       type: String,
       required: true,
     },
+    user: {
+      type: Object,
+      required: true,
+    },
     campId: {
       type: String,
       required: true,
     },
-    referredBy: {
-      type: String,
-      default: 'deeviral',
+    rewards: {
+      type: Array,
+      required: true,
+    },
+    customActions: {
+      type: Array,
+      required: true,
+    },
+    referralPoint: {
+      type: Number,
+      required: true,
     },
   },
   components: {
@@ -45,71 +56,16 @@ export default {
         state: '',
         country: '',
         ip: '',
-        totalPoints: 0,
-        referralPoints: 0,
-        bonusPoints: 0,
         campaignId: '',
         pageId: 'WEnDEj5cYmSy0Cy0J4VV',
         registeredAt: Date.now(),
       },
-      alert: {
-        status: false,
-        message: 'Hey there. This is a very nice and beautiful alert!!!',
-      },
+      shareUrl: 'devrl.link',
+      mobile: true,
+      show: 'rewards',
     }
   },
-  methods: {
-    async save() {
-      this.campaignId = this.campId
-      const data = { ...this.form }
-      data.campaignId = this.campId
-      data.referredBy = this.referredBy
-      let vm = this
-
-      // Check to make sure the lead does not exist in the database
-      try {
-        const query = await db
-          .collection('leads')
-          .where('email', '==', data.email)
-          .get()
-
-        if (!query.empty) {
-          vm.alert.status = true
-          vm.alert.message = `Uh oh!! You have already registered for this contest! You can't register twice`
-          this.closeAlert()
-        } else {
-          saveLead()
-        }
-      } catch (error) {
-        console.log(error)
-        vm.body = `<h1>An Error occured. Please try again!</h1>`
-      }
-
-      async function saveLead() {
-        try {
-          const doc = await db.collection('leads').add(data)
-
-          vm.$router.push({
-            name: 'sharepage',
-            params: { lead: doc.id },
-            props: { campaignId: vm.campId },
-          })
-        } catch (error) {
-          console.log({ error: 'Something went wrong' })
-        }
-      }
-    },
-    closeAlert() {
-      console.log('I am inside the close alert function')
-      setTimeout(
-        function() {
-          this.alert.status = false
-          this.alert.message = ''
-        }.bind(this),
-        3000,
-      )
-    },
-  },
+  methods: {},
 }
 </script>
 

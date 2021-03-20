@@ -11,7 +11,7 @@ const routes = [
     component: LeadPage,
   },
   {
-    path: '/share',
+    path: '/share/:lead',
     name: 'sharepage',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route

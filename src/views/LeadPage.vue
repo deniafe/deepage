@@ -1,14 +1,15 @@
 <template>
   <div>
-    <leadPage :template="body" />
+    <leadPage :referredBy="referredBy" :template="body" :campId="campaignId" />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import axios from 'axios'
+// import axios from 'axios'
 import { parse } from 'node-html-parser'
 import leadPage from '@/components/leadPage'
+import { db } from '@/plugins/firebase'
 
 export default {
   name: 'Home',
@@ -18,12 +19,52 @@ export default {
   data() {
     return {
       body: '',
+      campaignId: '',
+      subDomain: '',
     }
+  },
+  computed: {
+    referredBy() {
+      return this.getParams(window.location.href).ref
+    },
   },
   created() {
     this.getPage()
+    this.getIp()
+    this.subDomain = this.getSubdomain(window.location.hostname)
+    console.log(
+      'This is the current subdoamin name: ',
+      this.getSubdomain(window.location.hostname),
+    )
   },
   methods: {
+    getIp() {
+      fetch('https://api.ipify.org?format=json')
+        .then(x => x.json())
+        .then(res => {
+          console.log(`Getting user's ip address: `, res)
+        })
+    },
+    getSubdomain(hostname) {
+      // eslint-disable-next-line no-useless-escape
+      var regexParse = new RegExp('[a-z\-0-9]{2,63}\.[a-z\.]{2,5}$')
+      var urlParts = regexParse.exec(hostname)
+      return hostname.replace(urlParts[0], '').slice(0, -1)
+    },
+    // console.log(getSubdomain(window.location.hostname))
+    getParams(url) {
+      var params = {}
+      var parser = document.createElement('a')
+      parser.href = url
+      var query = parser.search.substring(1)
+      var vars = query.split('&')
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=')
+        params[pair[0]] = decodeURIComponent(pair[1])
+      }
+      return params
+    },
+    // var referredBy = getParams(window.location.href).ref
     vueCode(rawHtml) {
       const root = parse(rawHtml)
       const inputs = root.querySelectorAll('input')
@@ -61,22 +102,32 @@ export default {
 
       return newHtml
     },
-    getPage() {
+    async getPage() {
       let vm = this
-      axios
-        .get(
-          'https://us-central1-deeviral-c24fe.cloudfunctions.net/api/pagebody/bUWbvuiRcKgou16grstw',
-        )
-        .then(function(response) {
-          const rawHtml = response.data.html
+      let subDomain = this.subDomain || 'instagram'
+      try {
+        const query = await db
+          .collection('pages')
+          .where('subDomain', '==', subDomain)
+          .where('type', '==', 'leadPage')
+          .get()
+
+        if (!query.empty) {
+          const data = query.docs[0].data()
+          console.log('This is the html: ', data)
+          const rawHtml = data.html
           vm.body = `<div>${vm.vueCode(rawHtml)}</div>`
+          vm.campaignId = data.campaignId
           const style = document.createElement('style')
-          style.innerHTML = response.data.css
+          style.innerHTML = data.css
           document.head.appendChild(style)
-        })
-        .catch(function(error) {
-          console.log('There was an error loading the web page', error)
-        })
+        } else {
+          vm.body = `<h1>Page Not found</h1>`
+        }
+      } catch (error) {
+        console.log('There was an error loading the web page', error)
+        vm.body = `<h1>There was an error loading this webpage</h1>`
+      }
     },
   },
 }
