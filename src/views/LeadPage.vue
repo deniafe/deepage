@@ -28,14 +28,16 @@ export default {
       return this.getParams(window.location.href).ref
     },
   },
-  created() {
-    this.getPage()
-    this.getIp()
+  mounted() {
     this.subDomain = this.getSubdomain(window.location.hostname)
     console.log(
       'This is the current subdoamin name: ',
       this.getSubdomain(window.location.hostname),
     )
+  },
+  created() {
+    this.getPage()
+    this.getIp()
   },
   methods: {
     getIp() {
@@ -104,7 +106,7 @@ export default {
     },
     async getPage() {
       let vm = this
-      let subDomain = this.subDomain || 'instagram'
+      let subDomain = this.subDomain || 'facebook'
       try {
         const query = await db
           .collection('pages')
