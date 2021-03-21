@@ -28,14 +28,21 @@ export default {
       return this.getParams(window.location.href).ref
     },
   },
-  mounted() {
+  // mounted() {
+  //   this.subDomain = this.getSubdomain(window.location.hostname)
+  //   console.log(
+  //     'This is the current subdomain name in mounted: ',
+  //     this.getSubdomain(window.location.hostname),
+  //   )
+  //   console.log('This is the domain on vue app in mounted: ', this.subDomain)
+  // },
+  created() {
     this.subDomain = this.getSubdomain(window.location.hostname)
     console.log(
-      'This is the current subdoamin name: ',
+      'This is the current subdomain name in created: ',
       this.getSubdomain(window.location.hostname),
     )
-  },
-  created() {
+    console.log('This is the domain on vue app in created: ', this.subDomain)
     this.getPage()
     this.getIp()
   },
