@@ -61,8 +61,9 @@ export default {
         registeredAt: Date.now(),
       },
       shareUrl: 'devrl.link',
-      mobile: true,
+      mobile: false,
       show: 'rewards',
+      progress: '',
     }
   },
   methods: {},
